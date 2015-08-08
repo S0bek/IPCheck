@@ -22,21 +22,29 @@
 
 use strict;
 use LWP::UserAgent;
+use Term::ANSIColor;
 
-my ($url , $host_detail , $ip_detail , $ua , $host_req , $ip_req , $host_resp , $ip_resp , $details);
+my ($url , $ip_detail , $ua , $ip_req , $ip_resp);
+my $details = "";
 
-$url = "http://ifconfig.me";
-$host_detail = "$url/host";
-$ip_detail = "$url/ip";
-
+$ip_detail = "http://mxtoolbox.com/WhatIsMyIP/";
 $ua = LWP::UserAgent->new();
-$host_req = HTTP::Request->new( GET => $host_detail );
-
-$host_resp = $ua->request($host_req);
-$details = $host_resp->decoded_content if ($host_resp->is_success);
 
 $ip_req = HTTP::Request->new( GET => $ip_detail );
 $ip_resp = $ua->request($ip_req);
-$details = $details . $ip_resp->decoded_content if ($ip_resp->is_success);
 
-print "Informations concernant votre adresse IP:\n$details\n";
+if ($ip_resp->is_success) {
+
+  my $content = $ip_resp->decoded_content;
+  my @code = split(" " , $content);
+
+  for (@code) {
+    $details = substr($_ , 0 , -4) if ($_ =~ /([0-9]{1,3}\.){3}([0-9]{2,3})/);
+  }
+
+}
+
+print "Informations concernant votre adresse IP: ";
+print color 'cyan';
+print "$details\n";
+print color 'reset';
