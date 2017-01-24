@@ -1,50 +1,41 @@
 #!/usr/bin/perl -w
 
-# Copyright (c) 2015 by S0bek.
-# All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# HOW TO USE:
-#1) type "cpan" on your shell
-#2) setup LWP::UserAgent module via the CPAN repo
-#3) launch the program
-
 use strict;
+
 use LWP::UserAgent;
 use Term::ANSIColor;
 
-my ($url , $ip_detail , $ua , $ip_req , $ip_resp);
-my $details = "";
+#Dans le cas de l'erreur de certificat
+$ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 0;
 
-$ip_detail = "http://mxtoolbox.com/WhatIsMyIP/";
-$ua = LWP::UserAgent->new();
+#Mise en place de l'agent utilisateur pour la connexion web
+my (@addr , $ip);
+my $service = "https://ipv4.wtfismyip.com/";
+my $ua = LWP::UserAgent->new();
 
-$ip_req = HTTP::Request->new( GET => $ip_detail );
-$ip_resp = $ua->request($ip_req);
+my $httpRequest = HTTP::Request->new( GET => $service );
+my $status = $ua->request($httpRequest);
 
-if ($ip_resp->is_success) {
+if ($status->is_success) {
+    my $pageContent = $status->decoded_content;
+    my @page = split(/ / , $pageContent);
 
-  my $content = $ip_resp->decoded_content;
-  my @code = split(" " , $content);
+    foreach (@page) {
+        chomp;
 
-  for (@code) {
-    $details = substr($_ , 0 , -4) if ($_ =~ /([0-9]{1,3}\.){3}([0-9]{2,3})/);
-  }
+        #Extraction de l'adresse IP
+        if ("$_" =~ m/([0-9]{1,3}\.){3}([0-9]{2,3})/) {
+            my $addr = (split(/\>/ , "$_"))[4];
+            $ip = join("" , (split(/\</ , $addr))[0]);
+            #print "$ip";
+        }
+
+    }
 
 }
 
-print "Informations concernant votre adresse IP: ";
+#Affichage de l'adresse ip cliente
+print "Adresse IP: ";
 print color 'cyan';
-print "$details\n";
+print "$ip\n";
 print color 'reset';
