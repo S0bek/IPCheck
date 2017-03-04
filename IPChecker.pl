@@ -6,7 +6,7 @@ use LWP::UserAgent;
 use Term::ANSIColor;
 
 #Dans le cas de l'erreur de certificat
-$ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 0;
+#$ENV{'PERL_LWP_SSL_VERIFY_HOSTNAME'} = 0;
 
 #Mise en place de l'agent utilisateur pour la connexion web
 my (@addr , $ip);
@@ -25,9 +25,8 @@ if ($status->is_success) {
 
         #Extraction de l'adresse IP
         if ("$_" =~ m/([0-9]{1,3}\.){3}([0-9]{2,3})/) {
-            my $addr = (split(/\>/ , "$_"))[4];
+            my $addr = (split(/\>/ , "$_"))[4]; 
             $ip = join("" , (split(/\</ , $addr))[0]);
-            #print "$ip";
         }
 
     }
@@ -39,3 +38,4 @@ print "Adresse IP: ";
 print color 'cyan';
 print "$ip\n";
 print color 'reset';
+
